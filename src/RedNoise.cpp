@@ -13,7 +13,8 @@
 
 void draw(DrawingWindow &window) {
 	window.clearPixels();
-	drawRGBColors(window, WIDTH);
+	// drawRGBColors(window, WIDTH);
+	drawStrokedTriangleWrapper(window);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
