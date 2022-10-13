@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
+#include "Week3.h"
 
 #define WIDTH 320
 #define HEIGHT 240
