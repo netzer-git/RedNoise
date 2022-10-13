@@ -34,12 +34,33 @@ void drawStrokedTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window)
 	drawLine(t.v2(), t.v0(), colour, window);
 }
 
-CanvasTriangle generateTriangle() {
-	CanvasPoint v0 = CanvasPoint(rand() % WIDTH, rand() % HEIGHT);
-	CanvasPoint v1 = CanvasPoint(rand() % WIDTH, rand() % HEIGHT);
-	CanvasPoint v2 = CanvasPoint(rand() % WIDTH, rand() % HEIGHT);
+CanvasTriangle generateRandomTriangle(int witdh=WIDTH, int height=HEIGHT) {
+	CanvasPoint v0 = CanvasPoint(rand() % witdh, rand() % height);
+	CanvasPoint v1 = CanvasPoint(rand() % witdh, rand() % height);
+	CanvasPoint v2 = CanvasPoint(rand() % witdh, rand() % height);
+	return CanvasTriangle(v0, v1, v2);
+}
+
+Colour generateRandomColour() {
+	int red = rand() % 256;
+	int blue = rand() % 256;
+	int green = rand() % 256;
+	return Colour(red, blue, green);
 }
 
 void drawStrokedTriangleWrapper(DrawingWindow& window) {
+	CanvasTriangle t;
+	Colour c;
+	for (int i = 0; i < 3; i++) {
+		drawStrokedTriangle(generateRandomTriangle(), generateRandomColour(), window);
+	}
+}
 
+void drawFilledTriangleWrapper(CanvasTriangle t, Colour colour, DrawingWindow& window) {
+
+}
+
+void drawFilledTriangleWrapper(DrawingWindow& window) {
+	drawFilledTriangleWrapper(generateRandomTriangle(), generateRandomColour(), window);
+	drawStrokedTriangle(generateRandomTriangle(), Colour(255, 255, 255), window);
 }

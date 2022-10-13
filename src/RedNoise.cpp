@@ -12,9 +12,8 @@
 
 
 void draw(DrawingWindow &window) {
-	window.clearPixels();
+	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
-	drawStrokedTriangleWrapper(window);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -23,6 +22,8 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
 		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
 		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
+		else if (event.key.keysym.sym == SDLK_u) drawStrokedTriangleWrapper(window);
+		else if (event.key.keysym.sym == SDLK_f) drawFilledTriangleWrapper(window);
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");
