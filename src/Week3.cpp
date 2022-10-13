@@ -2,6 +2,8 @@
 #include "CanvasTriangle.h"
 #include <Colour.h>
 #include "Week2.h"
+#include <algorithm>
+#include <iostream>
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -56,8 +58,49 @@ void drawStrokedTriangleWrapper(DrawingWindow& window) {
 	}
 }
 
-void drawFilledTriangleWrapper(CanvasTriangle t, Colour colour, DrawingWindow& window) {
+CanvasTriangle sortTriangle(CanvasTriangle t) {
+	CanvasTriangle s = CanvasTriangle();
 
+	return s;
+}
+
+void drawFilledTriangleWrapper(CanvasTriangle t, Colour colour, DrawingWindow& window) {
+	// sort top to bottom
+	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
+	std::cout << "first t: " << t << std::endl;
+	std::sort(a, a + 3, [] (CanvasPoint a, CanvasPoint b) {
+		return a.y < b.y;
+		});
+	CanvasPoint top = a[0];
+	CanvasPoint mid = a[1];
+	CanvasPoint bottom = a[2];
+	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
+	// divide to 2 triangles (find 4th ver)
+	int yF = mid.y - top.y;
+	int xL = abs(bottom.x - top.x); // fixme - what about neg
+	int yL = bottom.y - top.y;
+	float xFourth = (yF * xL) / yL;
+	float yFourth = mid.y;
+	// find right and left points
+	CanvasPoint r, l;
+	if (xFourth > mid.x) {
+		r = CanvasPoint(xFourth, yFourth);
+		l = mid;
+	}
+	else {
+		r = mid;
+		l = CanvasPoint(xFourth, yFourth);
+	}
+	std::cout << "r: " << r << ", l: " << l << std::endl;
+	// color top triangle
+	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, top.y - r.y);
+	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, top.y - r.y);
+	for (int i = top.y + 1; i < r.y; i++) {
+		CanvasPoint f = CanvasPoint(leftSide[i], i);
+		CanvasPoint t = CanvasPoint(rightSide[i], i);
+		drawLine(f, t, colour, window);
+	}
+	// color bottom triangle
 }
 
 void drawFilledTriangleWrapper(DrawingWindow& window) {
