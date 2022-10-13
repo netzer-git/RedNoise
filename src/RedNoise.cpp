@@ -38,8 +38,8 @@ void draw(DrawingWindow &window) {
 	glm::vec3 bottomLeft(255, 255, 0);   // yellow
 
 	for (size_t y = 0; y < window.height; y++) {
-		glm::vec3 from(255, 0 + y, 0);
-		glm::vec3 to(0, 0 + y, 255 - y);
+		glm::vec3 from(255, y, 0);
+		glm::vec3 to(0, y, 255 - y);
 		result = interpolateThreeElementValues(from, to, WIDTH);
 		for (size_t x = 0; x < window.width; x++) {
 			float red = result[x].x;
