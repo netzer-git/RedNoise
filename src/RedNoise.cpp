@@ -13,24 +13,7 @@
 
 void draw(DrawingWindow &window) {
 	window.clearPixels();
-	std::vector<glm::vec3> result;
-	glm::vec3 topLeft(255, 0, 0);        // red 
-	glm::vec3 topRight(0, 0, 255);       // blue 
-	glm::vec3 bottomRight(0, 255, 0);    // green 
-	glm::vec3 bottomLeft(255, 255, 0);   // yellow
-
-	for (size_t y = 0; y < window.height; y++) {
-		glm::vec3 from(255, y, 0);
-		glm::vec3 to(0, y, 255 - y);
-		result = interpolateThreeElementValues(from, to, WIDTH);
-		for (size_t x = 0; x < window.width; x++) {
-			float red = result[x].x;
-			float green = result[x].y;
-			float blue = result[x].z;
-			uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
-			window.setPixelColour(x, y, colour);
-		}
-	}
+	drawRGBColors(window, WIDTH);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
