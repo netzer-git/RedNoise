@@ -76,10 +76,16 @@ void drawFilledTriangleWrapper(CanvasTriangle t, Colour colour, DrawingWindow& w
 	CanvasPoint bottom = a[2];
 	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
 	// divide to 2 triangles (find 4th ver)
-	int yF = mid.y - top.y;
-	int xL = abs(bottom.x - top.x); // fixme - what about neg
-	int yL = bottom.y - top.y;
-	float xFourth = (yF * xL) / yL;
+	int fm = mid.y - top.y;
+	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
+	int l2 = bottom.y - top.y;
+	float xFourth, m0 = (fm * l0) / l2;
+	if (top.x > bottom.x) {
+		xFourth = top.x - m0;
+	}
+	else {
+		xFourth = top.x + m0;
+	}
 	float yFourth = mid.y;
 	// find right and left points
 	CanvasPoint r, l;
@@ -93,17 +99,25 @@ void drawFilledTriangleWrapper(CanvasTriangle t, Colour colour, DrawingWindow& w
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
-	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, top.y - r.y);
-	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, top.y - r.y);
-	for (int i = top.y + 1; i < r.y; i++) {
-		CanvasPoint f = CanvasPoint(leftSide[i], i);
-		CanvasPoint t = CanvasPoint(rightSide[i], i);
+	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, r.y - top.y);
+	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, l.y - top.y);
+	for (int i = top.y; i < r.y; i++) {
+		CanvasPoint f = CanvasPoint(leftSide.at(i - top.y), i);
+		CanvasPoint t = CanvasPoint(rightSide.at(i - top.y), i);
 		drawLine(f, t, colour, window);
 	}
 	// color bottom triangle
+	rightSide = interpolateSingleFloats(r.x, bottom.x, bottom.y - r.y);
+	leftSide = interpolateSingleFloats(l.x, bottom.x, bottom.y - l.y);
+	for (int i = mid.y; i < bottom.y; i++) {
+		CanvasPoint f = CanvasPoint(leftSide.at(i - mid.y), i);
+		CanvasPoint t = CanvasPoint(rightSide.at(i - mid.y), i);
+		drawLine(f, t, colour, window);
+	}
 }
 
 void drawFilledTriangleWrapper(DrawingWindow& window) {
-	drawFilledTriangleWrapper(generateRandomTriangle(), generateRandomColour(), window);
-	drawStrokedTriangle(generateRandomTriangle(), Colour(255, 255, 255), window);
+	CanvasTriangle t = generateRandomTriangle();
+	drawFilledTriangleWrapper(t, generateRandomColour(), window);
+	drawStrokedTriangle(t, Colour(255, 255, 255), window);
 }
