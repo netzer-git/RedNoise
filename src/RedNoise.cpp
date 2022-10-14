@@ -14,6 +14,7 @@
 void draw(DrawingWindow &window) {
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
+	drawTextureTriangleWrapper(window);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
