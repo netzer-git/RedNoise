@@ -1,6 +1,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <DrawingWindow.h>
+#include <CanvasPoint.h>
 
 std::vector<float> interpolateSingleFloats(float from, float to, int numberOfValues) {
 	float stepSize = (to - from) / (numberOfValues - 1);
@@ -18,6 +19,23 @@ std::vector<glm::vec3> interpolateThreeElementValues(glm::vec3 from, glm::vec3 t
 	std::vector<glm::vec3> steps;
 	for (int i = 0; i < numberOfValues; i++) {
 		steps.push_back(glm::vec3(from.x + i * stepSizeX, from.y + i * stepSizeY, from.z + i * stepSizeZ));
+	}
+	return steps;
+}
+
+
+std::vector<CanvasPoint> interpolateCanvasPointWithTexture(CanvasPoint from, CanvasPoint to, int numberOfValues) {
+	std::vector<CanvasPoint> steps;
+	float stepSizeX = (to.x - from.x) / (numberOfValues - 1);
+	float stepSizeY = (to.y - from.y) / (numberOfValues - 1);
+	float stepSizeTextureX = (to.texturePoint.x - from.texturePoint.x) / (numberOfValues - 1);
+	float stepSizeTextureY = (to.texturePoint.y - from.texturePoint.y) / (numberOfValues - 1);
+
+	for (int i = 0; i < numberOfValues; i++) {
+		CanvasPoint n = CanvasPoint(from.x + i * stepSizeX, from.y + i * stepSizeY);
+		n.texturePoint.x = from.texturePoint.x + i * stepSizeTextureX;
+		n.texturePoint.y = from.texturePoint.y + i * stepSizeTextureY;
+		steps.push_back(n);
 	}
 	return steps;
 }
