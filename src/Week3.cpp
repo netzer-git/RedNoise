@@ -65,6 +65,21 @@ CanvasTriangle sortTriangle(CanvasTriangle t) {
 	return s;
 }
 
+CanvasPoint findFilledFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint bottom) {
+	int fm = mid.y - top.y;
+	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
+	int l2 = bottom.y - top.y;
+	float xFourth, m0 = (fm * l0) / l2;
+	if (top.x > bottom.x) {
+		xFourth = top.x - m0;
+	}
+	else {
+		xFourth = top.x + m0;
+	}
+	float yFourth = mid.y;
+	return CanvasPoint(xFourth, yFourth);
+}
+
 void drawFilledTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) {
 	// sort top to bottom
 	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
@@ -77,26 +92,15 @@ void drawFilledTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) 
 	CanvasPoint bottom = a[2];
 	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
 	// divide to 2 triangles (find 4th ver)
-	int fm = mid.y - top.y;
-	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
-	int l2 = bottom.y - top.y;
-	float xFourth, m0 = (fm * l0) / l2;
-	if (top.x > bottom.x) {
-		xFourth = top.x - m0;
-	}
-	else {
-		xFourth = top.x + m0;
-	}
-	float yFourth = mid.y;
+	CanvasPoint r, l, n = findFilledFourthPoint(top, mid, bottom);
 	// find right and left points
-	CanvasPoint r, l;
-	if (xFourth > mid.x) {
-		r = CanvasPoint(xFourth, yFourth);
+	if (n.x > mid.x) {
+		r = n;
 		l = mid;
 	}
 	else {
 		r = mid;
-		l = CanvasPoint(xFourth, yFourth);
+		l = n;
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
@@ -123,18 +127,7 @@ void drawFilledTriangleWrapper(DrawingWindow& window) {
 	drawStrokedTriangle(t, Colour(255, 255, 255), window);
 }
 
-void drawTextureTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window, TextureMap tm) {
-	// sort top to bottom
-	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
-	std::cout << "first t: " << t << std::endl;
-	std::sort(a, a + 3, [](CanvasPoint a, CanvasPoint b) {
-		return a.y < b.y;
-		});
-	CanvasPoint top = a[0];
-	CanvasPoint mid = a[1];
-	CanvasPoint bottom = a[2];
-	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
-	// divide to 2 triangles (find 4th ver)
+CanvasPoint findTextureFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint bottom) {
 	int fm = mid.y - top.y;
 	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
 	int l2 = bottom.y - top.y;
@@ -146,18 +139,48 @@ void drawTextureTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window,
 		xFourth = top.x + m0;
 	}
 	float yFourth = mid.y;
+	CanvasPoint n = CanvasPoint(xFourth, yFourth);
+	// calculate n point TexturePoint
+	glm::vec3 fromXTexture(top.y, top.texturePoint.x, top.texturePoint.y); 
+	glm::vec3 toXTexture(bottom.y, bottom.texturePoint.x, bottom.texturePoint.y);
+	// fixme - number of steps can possibly not work with texture
+	std::vector<glm::vec3> result = interpolateThreeElementValues(fromXTexture, toXTexture, bottom.y - top.y);
+	for (glm::vec3 v : result) {
+		if (abs(v.x - mid.y) < 1) {
+			n.texturePoint.x = v.y;
+			n.texturePoint.y = v.z;
+			break;
+		}
+	}
+	return n;
+}
+
+void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm) {
+	// sort top to bottom
+	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
+	std::cout << "first t: " << t << std::endl;
+	std::sort(a, a + 3, [](CanvasPoint a, CanvasPoint b) {
+		return a.y < b.y;
+		});
+	CanvasPoint top = a[0];
+	CanvasPoint mid = a[1];
+	CanvasPoint bottom = a[2];
+	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
+	// divide to 2 triangles (find 4th ver)
+	CanvasPoint r, l, n = findTextureFourthPoint(top, mid, bottom);
+	std::cout << "New Canvas Point: " << n << " t.x: " << n.texturePoint.x << " t.y: " << n.texturePoint.y << std::endl;
 	// find right and left points
-	CanvasPoint r, l;
-	if (xFourth > mid.x) {
-		r = CanvasPoint(xFourth, yFourth);
+	if (n.x > mid.x) {
+		r = n;
 		l = mid;
 	}
 	else {
 		r = mid;
-		l = CanvasPoint(xFourth, yFourth);
+		l = n;
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
+	Colour colour = Colour(255, 255, 255);
 	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, r.y - top.y);
 	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, l.y - top.y);
 	for (int i = top.y; i < r.y; i++) {
@@ -184,6 +207,6 @@ void drawTextureTriangleWrapper(DrawingWindow& window) {
 	CanvasPoint bottom = CanvasPoint(300, 230);
 	bottom.texturePoint = TexturePoint(395, 380);
 	CanvasTriangle t = CanvasTriangle(top, mid, bottom);
-	drawTextureTriangle(t, generateRandomColour(), window, tm);
+	drawTextureTriangle(t, window, tm);
 	drawStrokedTriangle(t, Colour(255, 255, 255), window);
 }

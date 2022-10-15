@@ -14,7 +14,7 @@
 void draw(DrawingWindow &window) {
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
-	drawTextureTriangleWrapper(window);
+	//drawTextureTriangleWrapper(window);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -25,6 +25,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
 		else if (event.key.keysym.sym == SDLK_u) drawStrokedTriangleWrapper(window);
 		else if (event.key.keysym.sym == SDLK_f) drawFilledTriangleWrapper(window);
+		else if (event.key.keysym.sym == SDLK_t) drawTextureTriangleWrapper(window);
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");
