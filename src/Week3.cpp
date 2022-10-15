@@ -24,6 +24,21 @@ void drawLine(CanvasPoint from, CanvasPoint to, Colour colour, DrawingWindow& wi
 	}
 }
 
+void drawHorizontalTextureLine(CanvasPoint from, CanvasPoint to, TextureMap tm, DrawingWindow& window) {
+	std::cout << "!!New Line" << std::endl;
+	std::vector<CanvasPoint> canvasLine = interpolateCanvasPointWithTexture(from, to, to.x - from.x);
+	if (canvasLine.size() == 1) {
+		uint32_t colourNumeric = tm.pixels[from.texturePoint.x + from.texturePoint.y * tm.width];
+		window.setPixelColour(round(from.x), round(from.y), colourNumeric);
+		return;
+	}
+	for (auto c: canvasLine) {
+		std::cout << "Draw: " << c << " t.x: " << c.texturePoint.x << " t.y: " << c.texturePoint.y << std::endl;
+		uint32_t colourNumeric = tm.pixels[c.texturePoint.x + c.texturePoint.y * tm.width];
+		window.setPixelColour(round(c.x), round(c.y), colourNumeric);
+	}
+}
+
 void drawLineWrapper(DrawingWindow& window) {
 	CanvasPoint to = CanvasPoint(0, 0);
 	CanvasPoint from = CanvasPoint(320, 240);
@@ -144,14 +159,10 @@ CanvasPoint findTextureFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint
 	glm::vec3 fromXTexture(top.y, top.texturePoint.x, top.texturePoint.y); 
 	glm::vec3 toXTexture(bottom.y, bottom.texturePoint.x, bottom.texturePoint.y);
 	// fixme - number of steps can possibly not work with texture
-	std::vector<glm::vec3> result = interpolateThreeElementValues(fromXTexture, toXTexture, bottom.y - top.y);
-	for (glm::vec3 v : result) {
-		if (abs(v.x - mid.y) < 1) {
-			n.texturePoint.x = v.y;
-			n.texturePoint.y = v.z;
-			break;
-		}
-	}
+	std::vector<CanvasPoint> fullSide = interpolateCanvasPointWithTexture(top, bottom, bottom.y - top.y);
+	// fixme - the vector is *rounding* the index
+	n.texturePoint.x = fullSide[mid.y - top.y].texturePoint.x;
+	n.texturePoint.y = fullSide[mid.y - top.y].texturePoint.y;
 	return n;
 }
 
@@ -180,21 +191,20 @@ void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm)
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
-	Colour colour = Colour(255, 255, 255);
-	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, r.y - top.y);
-	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, l.y - top.y);
+	std::vector<CanvasPoint> rightSide = interpolateCanvasPointWithTexture(top, r, r.y - top.y);
+	std::vector<CanvasPoint> leftSide = interpolateCanvasPointWithTexture(top, l, l.y - top.y);
 	for (int i = top.y; i < r.y; i++) {
-		CanvasPoint f = CanvasPoint(leftSide.at(i - top.y), i);
-		CanvasPoint t = CanvasPoint(rightSide.at(i - top.y), i);
-		drawLine(f, t, colour, window);
+		CanvasPoint f = leftSide.at(i - top.y);
+		CanvasPoint t = rightSide.at(i - top.y);
+		drawHorizontalTextureLine(f, t, tm, window);
 	}
 	// color bottom triangle
-	rightSide = interpolateSingleFloats(r.x, bottom.x, bottom.y - r.y);
-	leftSide = interpolateSingleFloats(l.x, bottom.x, bottom.y - l.y);
+	rightSide = interpolateCanvasPointWithTexture(r, bottom, bottom.y - r.y);
+	leftSide = interpolateCanvasPointWithTexture(l, bottom, bottom.y - l.y);
 	for (int i = mid.y; i < bottom.y; i++) {
-		CanvasPoint f = CanvasPoint(leftSide.at(i - mid.y), i);
-		CanvasPoint t = CanvasPoint(rightSide.at(i - mid.y), i);
-		drawLine(f, t, colour, window);
+		CanvasPoint f = leftSide.at(i - mid.y);
+		CanvasPoint t = rightSide.at(i - mid.y);
+		drawHorizontalTextureLine(f, t, tm, window);
 	}
 }
 
