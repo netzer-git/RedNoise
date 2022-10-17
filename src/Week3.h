@@ -1,6 +1,9 @@
 #include <Colour.h>
 #include <TextureMap.h>
 
+
+extern int drawlimit;
+
 void drawLine(CanvasPoint from, CanvasPoint to, Colour color, DrawingWindow& window);
 void drawLineWrapper(DrawingWindow& window);
 

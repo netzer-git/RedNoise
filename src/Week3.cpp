@@ -25,16 +25,21 @@ void drawLine(CanvasPoint from, CanvasPoint to, Colour colour, DrawingWindow& wi
 }
 
 void drawHorizontalTextureLine(CanvasPoint from, CanvasPoint to, TextureMap tm, DrawingWindow& window) {
-	std::cout << "!!New Line" << std::endl;
+	// std::cout << "!!New Line" << std::endl;
 	std::vector<CanvasPoint> canvasLine = interpolateCanvasPointWithTexture(from, to, to.x - from.x);
 	if (canvasLine.size() == 1) {
 		uint32_t colourNumeric = tm.pixels[from.texturePoint.x + from.texturePoint.y * tm.width];
 		window.setPixelColour(round(from.x), round(from.y), colourNumeric);
 		return;
 	}
+	//std::cout << "Draw From: " << from << " t.x: " << from.texturePoint.x << " t.y: " << from.texturePoint.y << std::endl;
+	//std::cout << "Draw To: " << to << " t.x: " << to.texturePoint.x << " t.y: " << to.texturePoint.y << std::endl;
 	for (auto c: canvasLine) {
-		std::cout << "Draw: " << c << " t.x: " << c.texturePoint.x << " t.y: " << c.texturePoint.y << std::endl;
-		uint32_t colourNumeric = tm.pixels[c.texturePoint.x + c.texturePoint.y * tm.width];
+		// std::cout << "Draw: " << c << " t.x: " << c.texturePoint.x << " t.y: " << c.texturePoint.y << std::endl;
+		int x = c.texturePoint.x;
+		int y = c.texturePoint.y;
+		uint32_t colourNumeric = tm.pixels.at(x + y * tm.width);
+		//colourNumeric = (0xFF << 24) + (int(float(c.texturePoint.x) / 3.0) << 16) + (int(float(c.texturePoint.y) / 3.0) << 8);
 		window.setPixelColour(round(c.x), round(c.y), colourNumeric);
 	}
 }
@@ -166,19 +171,16 @@ CanvasPoint findTextureFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint
 	return n;
 }
 
+int drawlimit = 1;
+
 void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm) {
-	// sort top to bottom
-	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
-	std::cout << "first t: " << t << std::endl;
-	std::sort(a, a + 3, [](CanvasPoint a, CanvasPoint b) {
-		return a.y < b.y;
-		});
-	CanvasPoint top = a[0];
-	CanvasPoint mid = a[1];
-	CanvasPoint bottom = a[2];
+	CanvasPoint top = t[0];
+	CanvasPoint mid = t[1];
+	CanvasPoint bottom = t[2];
 	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
 	// divide to 2 triangles (find 4th ver)
-	CanvasPoint r, l, n = findTextureFourthPoint(top, mid, bottom);
+	CanvasPoint r, l;
+	CanvasPoint n = findTextureFourthPoint(top, mid, bottom);
 	std::cout << "New Canvas Point: " << n << " t.x: " << n.texturePoint.x << " t.y: " << n.texturePoint.y << std::endl;
 	// find right and left points
 	if (n.x > mid.x) {
@@ -191,11 +193,12 @@ void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm)
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
-	std::vector<CanvasPoint> rightSide = interpolateCanvasPointWithTexture(top, r, r.y - top.y);
-	std::vector<CanvasPoint> leftSide = interpolateCanvasPointWithTexture(top, l, l.y - top.y);
-	for (int i = top.y; i < r.y; i++) {
-		CanvasPoint f = leftSide.at(i - top.y);
-		CanvasPoint t = rightSide.at(i - top.y);
+	float topTriangleSectionHeight = r.y - top.y;
+	std::vector<CanvasPoint> rightSide = interpolateCanvasPointWithTexture(top, r, topTriangleSectionHeight);
+	std::vector<CanvasPoint> leftSide = interpolateCanvasPointWithTexture(top, l, topTriangleSectionHeight);
+	for (int i = 0; i < topTriangleSectionHeight; i++) {
+		CanvasPoint f = leftSide.at(i);
+		CanvasPoint t = rightSide.at(i);
 		drawHorizontalTextureLine(f, t, tm, window);
 	}
 	// color bottom triangle
@@ -210,6 +213,14 @@ void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm)
 
 void drawTextureTriangleWrapper(DrawingWindow& window) {
 	TextureMap tm = TextureMap("C:\\Users\\ADMIN\\Documents\\HUJI\\D Semester A\\Computer Graphics\\RedNoise\\src\\texture.ppm");
+	//for (int i = 0; i < 240; i++) {
+	//	CanvasPoint f = CanvasPoint(0, i);
+	//	f.texturePoint = TexturePoint(0, i);
+	//	CanvasPoint t = CanvasPoint(320, i);
+	//	t.texturePoint = TexturePoint(240, i);
+	//	drawHorizontalTextureLine(f, t, tm, window);
+	//}
+
 	CanvasPoint top = CanvasPoint(160, 10);
 	top.texturePoint = TexturePoint(195, 5);
 	CanvasPoint mid = CanvasPoint(10, 150);

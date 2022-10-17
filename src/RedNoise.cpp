@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "Week2.h"
 #include "Week3.h"
+#include "ObjParser.h"
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -26,6 +27,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_u) drawStrokedTriangleWrapper(window);
 		else if (event.key.keysym.sym == SDLK_f) drawFilledTriangleWrapper(window);
 		else if (event.key.keysym.sym == SDLK_t) drawTextureTriangleWrapper(window);
+		else if (event.key.keysym.sym == SDLK_p) drawlimit += 1;
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");
@@ -33,6 +35,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 }
 
 int main(int argc, char *argv[]) {
+	std::vector<ModelTriangle> m = parseObjFile("C:\\Users\\ADMIN\\Documents\\HUJI\\D Semester A\\Computer Graphics\\RedNoise\\src\\obj-src\\cornell-box.obj");
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
 	while (true) {
