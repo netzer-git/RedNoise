@@ -6,16 +6,26 @@
 #include <glm/glm.hpp>
 #include "Week2.h"
 #include "Week3.h"
-#include "ObjParser.h"
+#include "Week4.h"
+#include "Week5.h"
 
 #define WIDTH 320
 #define HEIGHT 240
 
+glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 4.0);
+glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
+								glm::vec3(0, 1, 0),
+								glm::vec3(0, 0, 1));
 
 void draw(DrawingWindow &window) {
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
 	//drawTextureTriangleWrapper(window);
+	//drawPointCloud(window);
+	//drawWireframe(window);
+	//drawRasterised(window);
+	//drawRasterisedDepth(window);
+	drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -27,7 +37,13 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_u) drawStrokedTriangleWrapper(window);
 		else if (event.key.keysym.sym == SDLK_f) drawFilledTriangleWrapper(window);
 		else if (event.key.keysym.sym == SDLK_t) drawTextureTriangleWrapper(window);
-		else if (event.key.keysym.sym == SDLK_p) drawlimit += 1;
+		else if (event.key.keysym.sym == SDLK_r) drawRasterisedDepth(window);
+		else if (event.key.keysym.sym == SDLK_d) moveCameraRight(window, cameraPos);
+		else if (event.key.keysym.sym == SDLK_a) moveCameraLeft(window, cameraPos);
+		else if (event.key.keysym.sym == SDLK_w) moveCameraUp(window, cameraPos);
+		else if (event.key.keysym.sym == SDLK_s) moveCameraDown(window, cameraPos);
+		else if (event.key.keysym.sym == SDLK_q) rotateClockMat(window, cameraOrMat);
+		else if (event.key.keysym.sym == SDLK_e) rotateUpMat(window, cameraOrMat);
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");

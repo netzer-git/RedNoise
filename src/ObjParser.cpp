@@ -53,9 +53,9 @@ std::vector<ModelTriangle> parseObjFile(const std::string& filename) {
         // split line
         std::vector<std::string> splittedLine = split(line, ' ');
         if (splittedLine[0] == "v") {
-            float x = std::stof(splittedLine[1]);
-            float y = std::stof(splittedLine[2]);
-            float z = std::stof(splittedLine[3]);
+            float x = std::stof(splittedLine[1]) * 0.35;
+            float y = std::stof(splittedLine[2]) * 0.35;
+            float z = std::stof(splittedLine[3]) * 0.35;
             vertices.push_back(glm::vec3(x, y, z));
         }
         else if (splittedLine[0] == "f") {
