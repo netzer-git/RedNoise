@@ -1,10 +1,4 @@
-#include "CanvasPoint.h"
-#include "CanvasTriangle.h"
-#include <Colour.h>
-#include "Week2.h"
-#include <algorithm>
-#include <iostream>
-#include <TextureMap.h>
+#include "Week3.h"
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -44,12 +38,84 @@ void drawHorizontalTextureLine(CanvasPoint from, CanvasPoint to, TextureMap tm, 
 	}
 }
 
+void drawLineFromScheme(CanvasPoint from, CanvasPoint to, Colour colour, std::vector<float> &depthScheme, DrawingWindow& window) {
+	std::vector<CanvasPoint> canvasLine = interpolateCanvasPointWithDepth(from, to, to.x - from.x);
+	int s = canvasLine.size();
+	if (canvasLine.size() == 1) {
+		int x = from.x;
+		int y = from.y;
+		float depthInverse = 1 / from.depth;
+		if (x < 0 || y < 0 || x + y * WIDTH >= HEIGHT * WIDTH || from.depth == 0) {
+			return;
+		}
+		if (depthInverse > depthScheme[x + y * WIDTH]) {
+			depthScheme[x + y * WIDTH] = depthInverse;
+			uint32_t colourNumeric = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+			window.setPixelColour(round(x), round(y), colourNumeric);
+		}
+		return;
+	}
+	for (auto c : canvasLine) {
+		int x = c.x;
+		int y = c.y;
+		// check for out-of-the-screen points
+		if (x < 0 || y < 0 || x + y * WIDTH >= HEIGHT * WIDTH || c.depth == 0) {
+			continue;
+		}
+		float depthInverse = 1 / c.depth;
+		// check if the depth scheme says we need to paint in the current color
+		if (depthInverse > depthScheme[x + y * WIDTH]) {
+			depthScheme[x + y * WIDTH] = depthInverse;
+			uint32_t colourNumeric = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+			window.setPixelColour(round(x), round(y), colourNumeric);
+		}
+	}
+}
+
+
 void drawLineWrapper(DrawingWindow& window) {
 	CanvasPoint to = CanvasPoint(0, 0);
 	CanvasPoint from = CanvasPoint(320, 240);
 	Colour colour = Colour(254, 254, 254);
 	drawLine(from, to, colour, window);
 }
+
+CanvasPoint findFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint bottom, bool texture = false, bool depth = false) {
+	if (mid.y == top.y) {
+		return top;
+	}
+	else if (mid.y == bottom.y) {
+		return bottom;
+	}
+	int fm = mid.y - top.y;
+	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
+	int l2 = bottom.y - top.y;
+	float xFourth, m0 = (fm * l0) / l2;
+	if (top.x > bottom.x) {
+		xFourth = top.x - m0;
+	}
+	else {
+		xFourth = top.x + m0;
+	}
+	float yFourth = mid.y;
+	CanvasPoint n = CanvasPoint(xFourth, yFourth);
+	std::vector<CanvasPoint> fullSide;
+	if (texture) {
+		int numOfValues = bottom.y - top.y;
+		fullSide = interpolateCanvasPointWithTexture(top, bottom, numOfValues);
+		int newPointIndex = mid.y - top.y;
+		n.texturePoint.x = fullSide[newPointIndex].texturePoint.x;
+		n.texturePoint.y = fullSide[newPointIndex].texturePoint.y;
+	}
+	if (depth) {
+		int numOfValues = round(bottom.y - top.y);
+		fullSide = interpolateCanvasPointWithDepth(top, bottom, numOfValues);
+		int newPointIndex = mid.y - top.y - 1;
+		n.depth = fullSide[newPointIndex].depth;
+	}
+	return n;
+}
+
 
 void drawStrokedTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) {
 	drawLine(t.v0(), t.v1(), colour, window);
@@ -85,21 +151,6 @@ CanvasTriangle sortTriangle(CanvasTriangle t) {
 	return s;
 }
 
-CanvasPoint findFilledFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint bottom) {
-	int fm = mid.y - top.y;
-	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
-	int l2 = bottom.y - top.y;
-	float xFourth, m0 = (fm * l0) / l2;
-	if (top.x > bottom.x) {
-		xFourth = top.x - m0;
-	}
-	else {
-		xFourth = top.x + m0;
-	}
-	float yFourth = mid.y;
-	return CanvasPoint(xFourth, yFourth);
-}
-
 void drawFilledTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) {
 	// sort top to bottom
 	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
@@ -112,7 +163,7 @@ void drawFilledTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) 
 	CanvasPoint bottom = a[2];
 	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
 	// divide to 2 triangles (find 4th ver)
-	CanvasPoint r, l, n = findFilledFourthPoint(top, mid, bottom);
+	CanvasPoint r, l, n = findFourthPoint(top, mid, bottom);
 	// find right and left points
 	if (n.x > mid.x) {
 		r = n;
@@ -124,17 +175,17 @@ void drawFilledTriangle(CanvasTriangle t, Colour colour, DrawingWindow& window) 
 	}
 	std::cout << "r: " << r << ", l: " << l << std::endl;
 	// color top triangle
-	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, r.y - top.y);
-	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, l.y - top.y);
-	for (int i = top.y; i < r.y; i++) {
+	std::vector<float> rightSide = interpolateSingleFloats(top.x, r.x, int(r.y) - int(top.y));
+	std::vector<float> leftSide = interpolateSingleFloats(top.x, l.x, int(l.y) - int(top.y));
+	for (int i = top.y; i < int(r.y); i++) {
 		CanvasPoint f = CanvasPoint(leftSide.at(i - top.y), i);
 		CanvasPoint t = CanvasPoint(rightSide.at(i - top.y), i);
 		drawLine(f, t, colour, window);
 	}
 	// color bottom triangle
-	rightSide = interpolateSingleFloats(r.x, bottom.x, bottom.y - r.y);
-	leftSide = interpolateSingleFloats(l.x, bottom.x, bottom.y - l.y);
-	for (int i = mid.y; i < bottom.y; i++) {
+	rightSide = interpolateSingleFloats(r.x, bottom.x, int(bottom.y) - int(r.y));
+	leftSide = interpolateSingleFloats(l.x, bottom.x, int(bottom.y) - int(l.y));
+	for (int i = mid.y; i < int(bottom.y); i++) {
 		CanvasPoint f = CanvasPoint(leftSide.at(i - mid.y), i);
 		CanvasPoint t = CanvasPoint(rightSide.at(i - mid.y), i);
 		drawLine(f, t, colour, window);
@@ -147,32 +198,6 @@ void drawFilledTriangleWrapper(DrawingWindow& window) {
 	drawStrokedTriangle(t, Colour(255, 255, 255), window);
 }
 
-CanvasPoint findTextureFourthPoint(CanvasPoint top, CanvasPoint mid, CanvasPoint bottom) {
-	int fm = mid.y - top.y;
-	int l0 = std::max(bottom.x, top.x) - std::min(bottom.x, top.x);
-	int l2 = bottom.y - top.y;
-	float xFourth, m0 = (fm * l0) / l2;
-	if (top.x > bottom.x) {
-		xFourth = top.x - m0;
-	}
-	else {
-		xFourth = top.x + m0;
-	}
-	float yFourth = mid.y;
-	CanvasPoint n = CanvasPoint(xFourth, yFourth);
-	// calculate n point TexturePoint
-	glm::vec3 fromXTexture(top.y, top.texturePoint.x, top.texturePoint.y); 
-	glm::vec3 toXTexture(bottom.y, bottom.texturePoint.x, bottom.texturePoint.y);
-	// fixme - number of steps can possibly not work with texture
-	std::vector<CanvasPoint> fullSide = interpolateCanvasPointWithTexture(top, bottom, bottom.y - top.y);
-	// fixme - the vector is *rounding* the index
-	n.texturePoint.x = fullSide[mid.y - top.y].texturePoint.x;
-	n.texturePoint.y = fullSide[mid.y - top.y].texturePoint.y;
-	return n;
-}
-
-int drawlimit = 1;
-
 void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm) {
 	CanvasPoint top = t[0];
 	CanvasPoint mid = t[1];
@@ -180,7 +205,7 @@ void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm)
 	std::cout << "top: " << top << " mid: " << mid << " bottom: " << bottom << std::endl;
 	// divide to 2 triangles (find 4th ver)
 	CanvasPoint r, l;
-	CanvasPoint n = findTextureFourthPoint(top, mid, bottom);
+	CanvasPoint n = findFourthPoint(top, mid, bottom, true, false);
 	std::cout << "New Canvas Point: " << n << " t.x: " << n.texturePoint.x << " t.y: " << n.texturePoint.y << std::endl;
 	// find right and left points
 	if (n.x > mid.x) {
@@ -213,13 +238,6 @@ void drawTextureTriangle(CanvasTriangle t, DrawingWindow& window, TextureMap tm)
 
 void drawTextureTriangleWrapper(DrawingWindow& window) {
 	TextureMap tm = TextureMap("C:\\Users\\ADMIN\\Documents\\HUJI\\D Semester A\\Computer Graphics\\RedNoise\\src\\texture.ppm");
-	//for (int i = 0; i < 240; i++) {
-	//	CanvasPoint f = CanvasPoint(0, i);
-	//	f.texturePoint = TexturePoint(0, i);
-	//	CanvasPoint t = CanvasPoint(320, i);
-	//	t.texturePoint = TexturePoint(240, i);
-	//	drawHorizontalTextureLine(f, t, tm, window);
-	//}
 
 	CanvasPoint top = CanvasPoint(160, 10);
 	top.texturePoint = TexturePoint(195, 5);
@@ -230,4 +248,44 @@ void drawTextureTriangleWrapper(DrawingWindow& window) {
 	CanvasTriangle t = CanvasTriangle(top, mid, bottom);
 	drawTextureTriangle(t, window, tm);
 	drawStrokedTriangle(t, Colour(255, 255, 255), window);
+}
+
+void drawFilledTriangleFromScheme(CanvasTriangle t, Colour colour, std::vector<float> &depthScheme, DrawingWindow& window) {
+	// sort top to bottom
+	CanvasPoint a[] = { t.v0(), t.v1(), t.v2() };
+	std::sort(a, a + 3, [](CanvasPoint a, CanvasPoint b) {
+		return a.y < b.y;
+		});
+	CanvasPoint top = a[0];
+	CanvasPoint mid = a[1];
+	CanvasPoint bottom = a[2];
+	// divide to 2 triangles (find 4th ver)
+	CanvasPoint r, l, n = findFourthPoint(top, mid, bottom, false, true);
+	// find right and left points
+	if (n.x > mid.x) {
+		r = n;
+		l = mid;
+	}
+	else {
+		r = mid;
+		l = n;
+	}
+	// color top triangle
+	int topTriangleSectionHeight = mid.y - top.y;
+	std::vector<CanvasPoint> rightSide = interpolateCanvasPointWithDepth(top, r, topTriangleSectionHeight);
+	std::vector<CanvasPoint> leftSide = interpolateCanvasPointWithDepth(top, l, topTriangleSectionHeight);
+	for (int i = 0; i < topTriangleSectionHeight; i++) {
+		CanvasPoint f = leftSide.at(i);
+		CanvasPoint t = rightSide.at(i);
+		drawLineFromScheme(f, t, colour, depthScheme, window);
+	}
+	// color bottom triangle
+	int bottomTriangleSectionHeight = bottom.y - mid.y;
+	rightSide = interpolateCanvasPointWithDepth(r, bottom, bottom.y - r.y);
+	leftSide = interpolateCanvasPointWithDepth(l, bottom, bottom.y - l.y);
+	for (int i = 0; i < bottomTriangleSectionHeight; i++) {
+		CanvasPoint f = leftSide.at(i);
+		CanvasPoint t = rightSide.at(i);
+		drawLineFromScheme(f, t, colour, depthScheme, window);
+	}
 }
