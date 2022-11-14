@@ -8,6 +8,7 @@
 #include "Week3.h"
 #include "Week4.h"
 #include "Week5.h"
+#include "Week6.h"
 
 #define WIDTH 320
 #define HEIGHT 240
