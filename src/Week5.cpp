@@ -84,10 +84,12 @@ void lookAtMid(glm::vec3& cameraPos, glm::mat3& cameraOrMat) {
 }
 
 void rotateUpMat(DrawingWindow& window, glm::vec3& cameraPos, glm::mat3& cameraOrMat) {
-	float deg = 0.1;
+	//std::cout << "CameraPos (init):" << cameraPos.x << "," << cameraPos.y << "," << cameraPos.z << std::endl;
+	float deg = 0.01;
 	glm::mat3 upRotatMat = glm::mat3(1, 0, 0, 0, cos(deg), sin(deg), 0, -sin(deg), cos(deg));
-	cameraOrMat += upRotatMat;
 	cameraPos = upRotatMat * cameraPos;
+	lookAtMid(cameraPos, cameraOrMat);
+	//std::cout << "CameraPos:" << cameraPos.x << "," << cameraPos.y << "," << cameraPos.z << std::endl;
 }
 
 void rotateClockMat(DrawingWindow& window, glm::vec3& cameraPos, glm::mat3& cameraOrMat) {
