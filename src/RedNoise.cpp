@@ -16,8 +16,10 @@ glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 4.0);
 glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
 								glm::vec3(0, 1, 0),
 								glm::vec3(0, 0, 1));
+bool orbit = false;
 
 void draw(DrawingWindow &window) {
+	window.clearPixels();
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
 	//drawTextureTriangleWrapper(window);
@@ -25,6 +27,10 @@ void draw(DrawingWindow &window) {
 	//drawWireframe(window);
 	//drawRasterised(window);
 	//drawRasterisedDepth(window);
+	if (orbit) {
+		rotateClock(window, cameraPos);
+		lookAtMid(cameraPos, cameraOrMat);
+	}
 	drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
 }
 
@@ -42,8 +48,11 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_a) moveCameraLeft(window, cameraPos);
 		else if (event.key.keysym.sym == SDLK_w) moveCameraUp(window, cameraPos);
 		else if (event.key.keysym.sym == SDLK_s) moveCameraDown(window, cameraPos);
-		else if (event.key.keysym.sym == SDLK_q) rotateClockMat(window, cameraOrMat);
-		else if (event.key.keysym.sym == SDLK_e) rotateUpMat(window, cameraOrMat);
+		else if (event.key.keysym.sym == SDLK_e) rotateUp(window, cameraPos);
+
+		else if (event.key.keysym.sym == SDLK_q) rotateClockMat(window, cameraPos, cameraOrMat);
+
+		else if (event.key.keysym.sym == SDLK_o) orbit = orbit ? false : true;
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");
