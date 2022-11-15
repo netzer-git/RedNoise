@@ -4,6 +4,8 @@
 #include <fstream>
 #include <unordered_map>
 
+#define OBJ_PATH "C:\\Users\\ADMIN\\Documents\\HUJI\\D Semester A\\Computer Graphics\\RedNoise\\src\\obj-src\\cornell-box.obj"
+
 std::unordered_map<std::string, Colour> parseMtlFile(const std::string& filename) {
     std::unordered_map<std::string, Colour> mtls;
 
@@ -37,7 +39,7 @@ std::unordered_map<std::string, Colour> parseMtlFile(const std::string& filename
 }
 
 std::vector<ModelTriangle> parseObjFile(const std::string& filename) {
-	std::ifstream inputStream(filename);
+	std::ifstream inputStream(OBJ_PATH);
 	std::string line;
 
     std::vector<ModelTriangle> triangles;

@@ -32,7 +32,8 @@ void draw(DrawingWindow &window) {
 		rotateClock(window, cameraPos);
 		lookAtMid(cameraPos, cameraOrMat);
 	}
-	drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
+	// drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
+	drawRayCast(window, cameraPos);
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -60,9 +61,24 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 	}
 }
 
+void sanityCheck() {
+	ModelTriangle t = ModelTriangle(
+		glm::vec3(0, 0, 1),
+		glm::vec3(0, 1, 0),
+		glm::vec3(1, 0, 0),
+		Colour()
+	);
+	std::cout << findInteractionWithTriangle(
+		cameraPos,
+		glm::vec3(0, 0, -1),
+		t
+	) << std::endl;
+}
+
 int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
+	sanityCheck();
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
