@@ -20,7 +20,7 @@ glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
 bool orbit = false;
 
 void draw(DrawingWindow &window) {
-	window.clearPixels();
+	//window.clearPixels(); TODO - UNCOMMENT
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
 	//drawTextureTriangleWrapper(window);
@@ -33,7 +33,8 @@ void draw(DrawingWindow &window) {
 		lookAtMid(cameraPos, cameraOrMat);
 	}
 	// drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
-	drawRayCast(window, cameraPos);
+	//drawRayCast(window, cameraPos); TODO - UNCOMMENT
+	std::cout << "Draw Cycle Finished" << std::endl;
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -78,7 +79,8 @@ void sanityCheck() {
 int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
-	sanityCheck();
+	// sanityCheck();
+	drawRayCast(window, cameraPos);
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
