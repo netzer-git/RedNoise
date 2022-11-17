@@ -4,16 +4,15 @@
 #define HEIGHT 240
 
 glm::vec3 convertPointToRay(glm::vec3 camera, glm::vec2 point, float focalLength = 2, glm::mat3 cameraRotMat = glm::mat3()) {
-	//std::cout << "p:" << point.x << "," << point.y << "," << std::endl;
 	glm::vec3 ray;
 	glm::vec3 pointCameraSpace;
 	int z = 1;
-	pointCameraSpace.x = (z * (point.x + WIDTH / 2)) / (150 * focalLength);
-	pointCameraSpace.y = (z * (point.y + HEIGHT / 2)) / (150 * focalLength);
+	int constScale = 45;
+	pointCameraSpace.x = z * (point.x - WIDTH / 2) / (constScale * focalLength);
+	pointCameraSpace.y = -z * (point.y - HEIGHT / 2) / (constScale * focalLength);
 	pointCameraSpace.z = 0;
 	ray = pointCameraSpace - camera;
 	ray = glm::normalize(ray);
-	//std::cout << "After Transform: " << ray.x << "," << ray.y << "," << ray.z << std::endl;
 	return ray;
 }
 

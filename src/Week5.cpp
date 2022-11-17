@@ -11,8 +11,9 @@ CanvasPoint getCanvasIntersectionPointByMat(glm::vec3 cameraPos ,glm::mat3 camer
 	// std::cout << "vp:" << vertexPosition.x << "," << vertexPosition.y << "," << vertexPosition.z << std::endl;
 	glm::vec3 cameraToVertex = vertexPosition - cameraPos;
 	vertexPosition = cameraToVertex * cameraRotMat;
-	vertexPosition.x = ((focalLength / vertexPosition.z) * -vertexPosition.x) * 150 + WIDTH / 2;
-	vertexPosition.y = ((focalLength / vertexPosition.z) * vertexPosition.y) * 150 + HEIGHT / 2;
+	int constScale = 150;
+	vertexPosition.x = ((focalLength / vertexPosition.z) * -vertexPosition.x) * constScale + WIDTH / 2;
+	vertexPosition.y = ((focalLength / vertexPosition.z) * vertexPosition.y) * constScale + HEIGHT / 2;
 	vertexPosition.z = -vertexPosition.z;
 	CanvasPoint canvasPoint = CanvasPoint(vertexPosition.x, vertexPosition.y, vertexPosition.z);
 	// std::cout << "After Transform: " << canvasPoint << std::endl;
