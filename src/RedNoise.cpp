@@ -18,22 +18,29 @@ glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
 								glm::vec3(0, 1, 0),
 								glm::vec3(0, 0, 1));
 bool orbit = false;
+int mode = 0;
 
 void draw(DrawingWindow &window) {
-	//window.clearPixels(); TODO - UNCOMMENT
+	window.clearPixels();
 	// window.clearPixels();
 	// drawRGBColors(window, WIDTH);
 	//drawTextureTriangleWrapper(window);
 	//drawPointCloud(window);
-	//drawWireframe(window);
 	//drawRasterised(window);
-	//drawRasterisedDepth(window);
 	if (orbit) {
 		rotateClock(window, cameraPos);
 		lookAtMid(cameraPos, cameraOrMat);
 	}
+	if (mode == 1) {
+		drawWireframe(window);
+	}
+	else if (mode == 2) {
+		drawRasterisedDepth(window);
+	}
+	else if (mode == 3) {
+		drawRayCast(window, cameraPos);
+	}
 	// drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
-	//drawRayCast(window, cameraPos); TODO - UNCOMMENT
 	std::cout << "Draw Cycle Finished" << std::endl;
 }
 
@@ -52,10 +59,14 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_w) moveCameraUp(window, cameraPos);
 		else if (event.key.keysym.sym == SDLK_s) moveCameraDown(window, cameraPos);
 		else if (event.key.keysym.sym == SDLK_e) rotateUp(window, cameraPos);
-
 		else if (event.key.keysym.sym == SDLK_q) rotateClockMat(window, cameraPos, cameraOrMat);
 
 		else if (event.key.keysym.sym == SDLK_o) orbit = orbit ? false : true;
+
+		else if (event.key.keysym.sym == SDLK_1) mode = 1;
+		else if (event.key.keysym.sym == SDLK_2) mode = 2;
+		else if (event.key.keysym.sym == SDLK_3) mode = 3;
+
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
 		window.saveBMP("output.bmp");
@@ -63,24 +74,12 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 }
 
 void sanityCheck() {
-	ModelTriangle t = ModelTriangle(
-		glm::vec3(0, 0, 1),
-		glm::vec3(0, 1, 0),
-		glm::vec3(1, 0, 0),
-		Colour()
-	);
-	std::cout << findInteractionWithTriangle(
-		cameraPos,
-		glm::vec3(0, 0, -1),
-		t
-	) << std::endl;
 }
 
 int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
-	// sanityCheck();
-	drawRayCast(window, cameraPos);
+	//sanityCheck();
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);

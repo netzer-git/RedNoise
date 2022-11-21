@@ -5,6 +5,3 @@
 #include <DrawingWindow.h>
 
 void drawRayCast(DrawingWindow& window, glm::vec3 camera);
-
-// sanity
-RayTriangleIntersection findInteractionWithTriangle(glm::vec3 camera, glm::vec3 ray, const ModelTriangle& triangle);
