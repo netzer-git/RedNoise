@@ -9,6 +9,7 @@
 #include "Week4.h"
 #include "Week5.h"
 #include "Week6.h"
+#include "Week7.h"
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -19,6 +20,7 @@ glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
 								glm::vec3(0, 0, 1));
 bool orbit = false;
 int mode = 0;
+int cycle = 0;
 
 void draw(DrawingWindow &window) {
 	window.clearPixels();
@@ -40,8 +42,12 @@ void draw(DrawingWindow &window) {
 	else if (mode == 3) {
 		drawRayCast(window, cameraPos);
 	}
+	else if (mode == 4) {
+		drawRayCastProximity(window, cameraPos);
+	}
 	// drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
-	std::cout << "Draw Cycle Finished" << std::endl;
+	std::cout << "Draw Cycle Finished: " << cycle << std::endl;
+	cycle++;
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -66,6 +72,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_1) mode = 1;
 		else if (event.key.keysym.sym == SDLK_2) mode = 2;
 		else if (event.key.keysym.sym == SDLK_3) mode = 3;
+		else if (event.key.keysym.sym == SDLK_4) mode = 4;
 
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
