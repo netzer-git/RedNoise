@@ -18,9 +18,14 @@ glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 4.0);
 glm::mat3 cameraOrMat = glm::mat3(glm::vec3(1, 0, 0),
 								glm::vec3(0, 1, 0),
 								glm::vec3(0, 0, 1));
+glm::vec3 lightSource = glm::vec3(0.0, 0.45, 0.5);
 bool orbit = false;
 int mode = 0;
 int cycle = 0;
+
+void printVector(std::string name, glm::vec3 vec) {
+	std::cout << name << ": " << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
+}
 
 void draw(DrawingWindow &window) {
 	window.clearPixels();
@@ -43,10 +48,11 @@ void draw(DrawingWindow &window) {
 		drawRayCast(window, cameraPos);
 	}
 	else if (mode == 4) {
-		drawRayCastProximity(window, cameraPos);
+		drawRayCastProximity(window, cameraPos, lightSource);
 	}
-	// drawRasterisedDepthByCamera(window, cameraPos, cameraOrMat);
+	drawRayCastProximity(window, cameraPos, lightSource); // TODO: DELETE
 	std::cout << "Draw Cycle Finished: " << cycle << std::endl;
+	printVector("lightSource", lightSource);
 	cycle++;
 }
 
@@ -73,6 +79,10 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_2) mode = 2;
 		else if (event.key.keysym.sym == SDLK_3) mode = 3;
 		else if (event.key.keysym.sym == SDLK_4) mode = 4;
+
+
+		else if (event.key.keysym.sym == SDLK_PAGEUP) lightSource.y -= 0.2;
+		else if (event.key.keysym.sym == SDLK_PAGEDOWN) lightSource.y += 0.2;
 
 	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
 		window.savePPM("output.ppm");
