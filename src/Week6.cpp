@@ -4,7 +4,7 @@
 #define HEIGHT 240
 
 
-glm::vec3 convertPointToRay(glm::vec3 camera, glm::vec2 point, float focalLength = 2, glm::mat3 cameraRotMat = glm::mat3()) {
+glm::vec3 convertPointToDirectionRay(glm::vec3 camera, glm::vec2 point, float focalLength = 2, glm::mat3 cameraRotMat = glm::mat3()) {
 	glm::vec3 ray;
 	glm::vec3 pointCameraSpace;
 	int z = 1;
@@ -56,9 +56,7 @@ RayTriangleIntersection getClosestIntersection(glm::vec3 startPoint, glm::vec3 r
 
 
 bool isShadowrayHittingLight(glm::vec3 point, size_t trianglePointIndex, std::vector<ModelTriangle> modelTriangles) {
-	glm::vec3 lightSource = (glm::vec3(0.650989 * 0.35, 2.7384973 * 0.35, -0.51796794 * 0.35) - glm::vec3(-0.64901096 * 0.35, 2.739334 * 0.35, 0.532032 * 0.35));
-	lightSource = (glm::vec3(0.650989 * 0.35, 0, -0.51796794 * 0.35) - glm::vec3(-0.64901096 * 0.35, 0, 0.532032 * 0.35));
-	lightSource = glm::vec3(0.0, 0.45, 0.5);
+	glm::vec3 lightSource = glm::vec3(0.0, 0.45, 0.5);
 	glm::vec3 ray = glm::normalize(point - lightSource);
 	RayTriangleIntersection closestIntersection = getClosestIntersection(lightSource, ray, modelTriangles);
 	return closestIntersection.triangleIndex == trianglePointIndex;
@@ -70,7 +68,7 @@ void drawRayCast(DrawingWindow& window, glm::vec3 camera) {
 	for (int j = 0; j < HEIGHT; j++) {
 		for (int i = 0; i < WIDTH; i++) {
 			// find the ray that coresponds with the point (i,j)
-			glm::vec3 rayToPoint = convertPointToRay(camera, glm::vec2(i, j));
+			glm::vec3 rayToPoint = convertPointToDirectionRay(camera, glm::vec2(i, j));
 			// find the intersection point between ray and model
 			RayTriangleIntersection intersectionPoint = getClosestIntersection(camera, rayToPoint, modelTriangles);
 			// color the window at (j,i) with the intersection triangle color
