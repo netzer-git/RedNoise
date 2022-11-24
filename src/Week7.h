@@ -3,4 +3,4 @@
 #define WIDTH 320
 #define HEIGHT 240
 
-void drawRayCastProximity(DrawingWindow& window, glm::vec3 camera);
+void drawRayCastProximity(DrawingWindow& window, glm::vec3 camera, glm::vec3 lightSource);
