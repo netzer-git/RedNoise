@@ -55,7 +55,7 @@ RayTriangleIntersection getClosestIntersection(glm::vec3 startPoint, glm::vec3 r
 }
 
 
-bool isShadowrayHittingLight(glm::vec3 point, size_t trianglePointIndex, std::vector<ModelTriangle> modelTriangles) {
+bool isShadowrayHittingConstantLight(glm::vec3 point, size_t trianglePointIndex, std::vector<ModelTriangle> modelTriangles) {
 	glm::vec3 lightSource = glm::vec3(0.0, 0.45, 0.5);
 	glm::vec3 ray = glm::normalize(point - lightSource);
 	RayTriangleIntersection closestIntersection = getClosestIntersection(lightSource, ray, modelTriangles);
@@ -74,7 +74,7 @@ void drawRayCast(DrawingWindow& window, glm::vec3 camera) {
 			// color the window at (j,i) with the intersection triangle color
 			Colour currentColour = intersectionPoint.intersectedTriangle.colour;
 			// try to find shadow
-			if (isShadowrayHittingLight(intersectionPoint.intersectionPoint, intersectionPoint.triangleIndex, modelTriangles)) {
+			if (isShadowrayHittingConstantLight(intersectionPoint.intersectionPoint, intersectionPoint.triangleIndex, modelTriangles)) {
 				colourNumeric = (255 << 24) + (int(currentColour.red) << 16) + (int(currentColour.green) << 8) + int(currentColour.blue);
 			}
 			else {
